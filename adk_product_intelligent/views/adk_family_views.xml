@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_adk_product_family_list" model="ir.ui.view">
+        <field name="name">adk.product.family.list</field>
+        <field name="model">adk.product.family</field>
+        <field name="arch" type="xml">
+            <list string="Familles d'articles ADK" decoration-muted="not active">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_category_id"/>
+                <field name="type"/>
+                <field name="is_immobilisation" widget="boolean_toggle"/>
+                <field name="product_count"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_adk_product_family_kanban" model="ir.ui.view">
+        <field name="name">adk.product.family.kanban</field>
+        <field name="model">adk.product.family</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="type"/>
+                <field name="product_count"/>
+                <field name="is_immobilisation"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_card_header">
+                            <strong><field name="name"/></strong>
+                            <span class="badge text-bg-secondary float-end"><field name="code"/></span>
+                        </div>
+                        <div>
+                            <span class="badge text-bg-info"><field name="type"/></span>
+                            <span t-if="record.is_immobilisation.raw_value" class="badge text-bg-warning">Immobilisation</span>
+                        </div>
+                        <div class="mt-2">
+                            <field name="product_count"/> article(s)
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_adk_product_family_form" model="ir.ui.view">
+        <field name="name">adk.product.family.form</field>
+        <field name="model">adk.product.family</field>
+        <field name="arch" type="xml">
+            <form string="Famille d'articles ADK">
+                <header/>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_products" type="object" class="oe_stat_button" icon="fa-cubes">
+                            <field name="product_count" widget="statinfo" string="Articles"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Ex: Matières premières, Prestations de service..."/></h1>
+                        <h3><field name="code" placeholder="Code court (ex: ELEC)" class="text-uppercase"/></h3>
+                    </div>
+                    <group>
+                        <group string="Classification">
+                            <field name="product_category_id" placeholder="Créée automatiquement si vide"/>
+                            <field name="type"/>
+                            <field name="is_storable" invisible="type != 'consu'"/>
+                            <field name="use_code_as_reference"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Seuils de sécurité par défaut">
+                            <field name="default_seuil_min"/>
+                            <field name="default_seuil_max"/>
+                            <field name="default_qty_multiple"/>
+                            <field name="reordering_trigger"/>
+                            <field name="default_warehouse_id"/>
+                        </group>
+                    </group>
+                    <group string="Comptabilité / Immobilisations">
+                        <group>
+                            <field name="is_immobilisation"/>
+                            <field name="compte_immobilisation_id" invisible="not is_immobilisation"/>
+                        </group>
+                        <group>
+                            <field name="compte_achat_id"/>
+                            <field name="compte_vente_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_adk_product_family_search" model="ir.ui.view">
+        <field name="name">adk.product.family.search</field>
+        <field name="model">adk.product.family</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher une famille">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="product_category_id"/>
+                <filter string="Immobilisations" name="filter_immo" domain="[('is_immobilisation','=',True)]"/>
+                <filter string="Biens" name="filter_consu" domain="[('type','=','consu')]"/>
+                <filter string="Services" name="filter_service" domain="[('type','=','service')]"/>
+                <filter string="Archivées" name="filter_inactive" domain="[('active','=',False)]"/>
+                <group expand="0" string="Grouper par">
+                    <filter string="Type" name="group_type" context="{'group_by':'type'}"/>
+                    <filter string="Catégorie" name="group_categ" context="{'group_by':'product_category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_adk_product_family" model="ir.actions.act_window">
+        <field name="name">Familles d'articles</field>
+        <field name="res_model">adk.product.family</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="view_adk_product_family_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smart_action">Créez votre première famille d'articles</p>
+            <p>Les familles permettent de regrouper vos articles (biens, services, immobilisations...)
+               et de leur appliquer en un clic une catégorie, des comptes et des seuils de sécurité.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_category_form_adk_inherit" model="ir.ui.view">
+        <field name="name">product.category.form.adk.inherit</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <div class="oe_button_box" name="adk_button_box">
+                    <button name="action_view_adk_families" type="object" class="oe_stat_button" icon="fa-sitemap"
+                            invisible="adk_family_count == 0">
+                        <field name="adk_family_count" widget="statinfo" string="Familles ADK"/>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
