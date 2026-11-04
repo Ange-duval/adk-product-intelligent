@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_adk_product_family_user,adk.product.family.user,model_adk_product_family,base.group_user,1,0,0,0
+access_adk_product_family_stock_user,adk.product.family.stock.user,model_adk_product_family,stock.group_stock_user,1,1,1,0
+access_adk_product_family_manager,adk.product.family.manager,model_adk_product_family,stock.group_stock_manager,1,1,1,1
+access_adk_bulk_config_wizard_user,adk.bulk.config.wizard.user,model_adk_bulk_config_wizard,base.group_user,1,1,1,1

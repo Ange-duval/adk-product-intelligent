@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_product_template_form_adk_inherit" model="ir.ui.view">
+        <field name="name">product.template.form.adk.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_adk_orderpoints" type="object" class="oe_stat_button" icon="fa-refresh"
+                        invisible="adk_orderpoint_count == 0">
+                    <field name="adk_orderpoint_count" widget="statinfo" string="Réappro. (Inventaire)"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//sheet" position="inside">
+                <div class="alert alert-warning" role="alert" invisible="adk_sync_state != 'error'">
+                    Une erreur de synchronisation ADK est survenue. Consultez le journal ci-dessous.
+                </div>
+            </xpath>
+
+            <notebook position="inside">
+                <page string="ADK - Famille &amp; Seuils" name="adk_page">
+                    <group>
+                        <group string="Famille &amp; Codification">
+                            <field name="adk_family_id" options="{'no_create': True}"/>
+                            <label for="adk_code"/>
+                            <div class="o_row">
+                                <field name="adk_code"/>
+                                <button name="action_adk_generate_code" type="object" string="Générer"
+                                        class="btn-link" icon="fa-magic"
+                                        invisible="not adk_family_id"/>
+                            </div>
+                            <field name="adk_use_as_reference"/>
+                            <field name="adk_sync_state" widget="badge"
+                                   decoration-success="adk_sync_state == 'synced'"
+                                   decoration-warning="adk_sync_state == 'pending'"
+                                   decoration-danger="adk_sync_state == 'error'"/>
+                            <field name="adk_last_sync"/>
+                        </group>
+                        <group string="Seuils de sécurité (synchro. Inventaire)">
+                            <field name="adk_seuil_min"/>
+                            <field name="adk_seuil_max"/>
+                            <field name="adk_qty_multiple"/>
+                            <field name="adk_reordering_trigger"/>
+                            <field name="adk_warehouse_id"/>
+                            <field name="adk_location_id"/>
+                        </group>
+                    </group>
+                    <group string="Comptabilité / Immobilisation">
+                        <group>
+                            <field name="adk_is_immobilisation"/>
+                            <field name="adk_compte_immobilisation_id" invisible="not adk_is_immobilisation"/>
+                        </group>
+                        <group>
+                            <field name="adk_compte_achat_id"/>
+                            <field name="adk_compte_vente_id"/>
+                        </group>
+                    </group>
+                    <button name="action_adk_sync_inventory" type="object" string="Forcer la synchronisation Inventaire"
+                            class="btn-secondary" icon="fa-refresh"/>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <record id="view_product_template_list_adk_inherit" model="ir.ui.view">
+        <field name="name">product.template.list.adk.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//*[self::list or self::tree]" position="attributes">
+                <attribute name="decoration-danger">adk_stock_alert</attribute>
+            </xpath>
+            <field name="categ_id" position="after">
+                <field name="adk_family_id" optional="show"/>
+                <field name="adk_code" optional="hide"/>
+                <field name="adk_seuil_min" optional="hide"/>
+                <field name="adk_seuil_max" optional="hide"/>
+                <field name="adk_is_immobilisation" optional="hide" widget="boolean_toggle"/>
+                <field name="adk_stock_alert" invisible="1"/>
+                <field name="adk_stock_alert_label" optional="show" string="Alerte stock"
+                       decoration-danger="adk_stock_alert"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_product_template_kanban_adk_inherit" model="ir.ui.view">
+        <field name="name">product.template.kanban.adk.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="inside">
+                <field name="adk_stock_alert"/>
+                <field name="adk_stock_alert_label"/>
+            </xpath>
+            <xpath expr="//t[@t-name='card']" position="inside">
+                <div t-if="record.adk_stock_alert.raw_value"
+                     class="alert alert-danger p-1 mt-1 mb-0 text-center fw-bold"
+                     style="font-size:11px; border-radius:4px;">
+                    <field name="adk_stock_alert_label"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_search_adk_inherit" model="ir.ui.view">
+        <field name="name">product.template.search.adk.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="adk_family_id"/>
+                <field name="adk_code"/>
+            </field>
+            <xpath expr="//search" position="inside">
+                <filter string="⚠ Alerte de seuil de stock" name="adk_filter_alert" domain="[('adk_stock_alert','=',True)]"/>
+                <filter string="Immobilisations" name="adk_filter_immo" domain="[('adk_is_immobilisation','=',True)]"/>
+                <filter string="Sans famille ADK" name="adk_filter_no_family" domain="[('adk_family_id','=',False)]"/>
+                <filter string="Sans code ADK" name="adk_filter_no_code" domain="[('adk_code','=',False)]"/>
+                <filter string="Famille ADK" name="adk_group_family" context="{'group_by':'adk_family_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Action pour lancer l'assistant en lot depuis la sélection multiple de la liste Articles -->
+    <record id="action_adk_bulk_config_from_products" model="ir.actions.act_window">
+        <field name="name">Configuration en lot ADK</field>
+        <field name="res_model">adk.bulk.config.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="context">{'default_product_ids': active_ids}</field>
+    </record>
+
+</odoo>
